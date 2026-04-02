@@ -1,0 +1,459 @@
+3) Process
+
+Insert-BST (current, value)
+	if current is NULL:
+		current process creates a new node
+		current process returns the node
+	if value to be inserted is less than value in current:
+		fork a new left child process
+		if child process is running:
+			current  Insert-BST (left of current, value)
+			return current and exit forked process
+		if parent process is running:
+			wait for the child to exit
+			once child has exited, get updated tree from child
+	if value to be inserted is greater than value in current:
+		fork a new right child process
+		if child process is running:
+			current  Insert-BST (right of current, value)
+			return current and exit forked process
+		if parent process is running:
+			wait for the child to exit
+			once child has exited, get updated tree from child
+	return final tree
+
+Search-BST (current, value)
+	if current is NULL: current process returns 0
+	if value to be searched is equal to current value: current process returns 1
+	if value to be searched is less than value in current:
+		fork a new left child process
+		if child process is running: Search-BST (left of current, value)
+		if parent process is running:
+			 wait for the child to exit
+			once child has exited, get exit value (0 or 1)
+	if value to be searched is greater than value in current:
+		fork a new right child process
+		if child process is running: Search-BST (right of current, value)
+		if parent process is running:
+			wait for the child to exit
+			once child has exited, get exit value (0 or 1)
+	return exit value
+
+------------------------------------------------------------------------------------------------------------------------------------------
+4, 5) Threads
+
+define a mutex
+
+coffee break (person)
+	take the mutex lock
+	one person is using the coffee machine, takes the mutex lock
+others are waiting
+	person has completed using the coffee machine
+	coffee machine is again available, so release the mutex lock
+	the completed person can exit, others will wait for their turn
+
+main()
+	define as many threads as required  equal to number of people
+	define the people – names, ingredients
+	initialise mutex
+	for each person
+create a thread and pass it to the function coffee break
+	for each person
+		based on the thread chosen, join is performed
+		one thread runs, the others are suspended, i.e., waiting
+		wait for the thread to be terminated
+		in other words, wait for the person to finish the coffee break
+		once done, exit the thread
+		allow another thread to be executed, i.e., next person is chosen
+	destroy mutex
+
+------------------------------------------------------------------------------------------------------------------------------------------
+6) Semaphores
+
+define a binary semaphore
+
+coffee break (person) 
+	wait(semaphore)
+	one person is using the coffee machine, others are waiting
+	person has completed using the coffee machine
+	coffee machine is again available, so signal
+	signal(semaphore)
+	the completed person can exit, others will wait for their turn
+
+main()
+	define as many threads as required  equal to number of people
+	define the people – names, ingredients
+	initialise semaphore to 1, give 0 state so that it can be used for threads
+	for each person
+create a thread and pass it to the function coffee break
+	for each person
+		based on the thread chosen, join is performed
+		one thread runs, the others are suspended, i.e., waiting
+		wait for the thread to be terminated
+		in other words, wait for the person to finish the coffee break
+		once done, exit the thread
+		allow another thread to be executed, i.e., next person is chosen
+	destroy semaphore
+
+------------------------------------------------------------------------------------------------------------------------------------------
+7) Scheduling Algorithms
+
+updateArrival (jobs, now)
+	for each job:
+		if arrival time of job = now
+		flag job as arrived
+
+updateRemainingTime (jobs, id)
+	reduce remaining time of jobs[id] by 1
+	if jobs[id] = 0
+		flag job as finished
+		dequeue finished job
+
+schedule (jobs)
+	while all jobs are not done:
+		scheduler (jobs, now)
+		print id of the job scheduled
+
+getTAT (jobs)
+	for each job:
+		TAT of job = CT – AT
+
+getWT (jobs)
+	for each job:
+		WT of job = TAT – BT
+
+average (jobs)
+	average TAT = sum of all TATs / no. of jobs
+	average WT = sum of all WTs / no. of jobs
+
+FCFS
+
+initialise job queue
+scheduler (jobs, now)
+	update arrival of jobs
+	schedule the job in front of the queue
+	update remaining time of job scheduled
+	return id of the job scheduled
+
+SSTF 
+
+initialise job queue
+scheduler (jobs, now)
+	update arrival time of jobs
+	for each newly arrived job
+		enqueue job in queue by ascending order of burst times
+	schedule job in front of the queue
+	update remaining time of scheduled job 
+	return id of job scheduled
+
+Priority - Non-Preemptive
+
+initialise job queue
+scheduler (jobs, now)
+	update arrival time of jobs
+	for each newly arrived job
+		enqueue job in queue by priority
+	schedule job in front of the queue
+	update remaining time of scheduled job 
+	return id of job scheduled
+
+Round Robin
+
+initialise job queue
+scheduler (jobs, now, q)
+	keep track of quantum time
+	update arrival time of jobs
+	for each newly arrived job:
+		enqueue job in queue
+	if current state of quantum time is not equal to q:
+		schedule job in front of queue
+	else:
+		dequeue job and enqueue it to the back of the queue
+		schedule job in front of queue
+	update remaining time of scheduled job
+	return id of scheduled job
+
+SJF Preemptive / SRTF
+
+scheduler (jobs, now)
+	update arrival time of jobs
+	for each arrived job that is not completed:
+		if remaining burst time of job < min:
+			min = remaining burst time
+			id = job id
+	schedule job with id
+	update remaining time of scheduled job
+	return id of scheduled job
+
+
+Priority - Preemptive
+
+scheduler (jobs, now)
+	update arrival time of jobs
+	schedule arrived, incomplete job with highest priority
+	update remaining time of scheduled job
+	return id of scheduled job
+
+RMS
+
+scheduler (jobs, now)
+initially, schedule the job with the highest priority
+priority = 1/deadline
+so, whichever process has the smaller deadline gets higher priority
+if period of current job is over: schedule next job in queue
+if period of next job has arrived: schedule next job in queue
+if periods are over: schedule nothing until next period arrives
+
+EDF
+
+scheduler (jobs, now)
+	find the job in job queue with earliest deadline
+	schedule the job
+	if the period of the job is done, dequeue it
+enqueue the dequeued job to the back of the queue
+
+------------------------------------------------------------------------------------------------------------------------------------------
+8) File Allocation
+
+Contiguous Allocation
+
+get the no. of files to be allocated
+for each file:
+	get the file name
+	get the starting position
+	if the starting position is already occupied:
+		get another starting position
+		keep repeating until a valid starting position is provided
+		exit if there are 5 failures
+	get the space required
+if all the memory spaces from start to space are free:
+		allocate file
+else:
+		file can’t be allocated
+		there is free memory available, but it is not contiguous
+
+Linked List Allocation
+
+get the no. of files to be allocated
+for each file:
+	get the file name
+	get the starting position
+	if the starting position is already occupied:
+		get another starting position
+		keep repeating until a valid starting position is provided
+		exit if there are 5 failures
+	get the space required
+if the remaining space in memory > space required:
+		while file allocation is not complete
+			if current position is not occupied:
+				allocate file
+			else:
+				jump to next free position
+				// Behave like a circular linked list
+				// If current position is 99/99, 
+				// Search for next free position from 0/99
+				allocate file
+			go to next position
+
+Indexed Allocation
+
+// Indexing Type: Derivative of Chain Indexing
+// Hash Function: (length of file name) mod (no. of indices)
+
+// Example:
+// File Name: hello
+// No. of Indices = 10
+// 5 % 10 = 5
+// So, hello will be allocated in index 5
+
+get the no. of files to be allocated
+for each file:
+	get the file name
+	get the space required
+	allocate file to index based on hash function
+	if memory is not available in index:
+extend memory of index  only as much as required
+	allocate file
+	store starting position of allocation of file
+
+
+------------------------------------------------------------------------------------------------------------------------------------------
+9) Pipes
+
+Insert-BST (current, value)
+	if current is NULL:
+		current process creates a new node
+		current process returns the node 
+	if value to be inserted is less than value in current:
+		create a pipe for left child
+		fork a new left child process
+		if child process is running:
+			current  Insert-BST (left of current, value)
+			write the tree into the pipe
+exit forked process
+		if parent process is running:
+			wait for the child to exit
+			once child has exited, get updated tree from child
+			that is, read the tree from the pipe
+	if value to be inserted is greater than value in current:
+		create a pipe for right child
+		fork a new right child process
+		if child process is running:
+			current  Insert-BST (right of current, value)
+			write the tree into the pipe
+exit forked process
+		if parent process is running:
+			wait for the child to exit
+			once child has exited, get updated tree from child
+			that is, read the tree from the pipe
+	return final tree
+
+------------------------------------------------------------------------------------------------------------------------------------------
+10) FIFOs
+
+Program 1
+
+create the FIFO file
+while not exited:
+	open the FIFO file for writing
+request a number from the user
+	if the number is -1:	
+		write the number to the FIFO file
+		exit
+	get the choice of calculation from the user
+	if 1: check if the number is a prime number
+	if 2: check if it is perfect
+	if 3: check if the number is a palindrome
+	otherwise: invalid, get the choice again
+	write the number and choice to the FIFO file
+	close the FIFO file
+
+	open the FIFO file for reading
+	read the result from the FIFO file
+	display results of prime/perfect/palindrome check using the data read
+	close the FIFO file
+
+ 
+Program 2
+
+create the FIFO file
+same name as in program 1; if it already exists, the existing one is used
+while not exited:
+	open the FIFO file for reading
+	read the number and choice from FIFO file
+	close the FIFO file
+	if the number is -1:	
+		exit
+	if choice is 1: perform prime check
+	if choice is 2: perform perfect number check
+	if choice is 3: perform palindrome check
+
+	open the FIFO file for writing
+	write the result of prime/perfect/palindrome check into FIFO file
+	close the FIFO file
+
+------------------------------------------------------------------------------------------------------------------------------------------
+11) Disk Scheduling
+
+receive total size of the disk, request queue, position of head pointer from user
+if it is SCAN/C-SCAN/LOOK/C-LOOK, receive direction (left/right)
+choose preferred CPU disk scheduling policy
+
+if FCFS:
+	while request queue is not empty:
+		schedule the front of the request queue
+		dequeue the request queue
+
+if SSTF:
+	while all requests are not scheduled:
+		schedule the request that is closest to the current disk position
+
+if SCAN:
+	if direction is left:
+		go to disk position 0
+		schedule all the requests along the way
+		change direction
+		schedule all the requests, up to the last request
+	if direction is right:
+		go to disk position MAX-1
+		schedule all the requests along the way
+		change direction
+		schedule all the requests, up to the last request
+
+if C-SCAN:
+	if direction is left:
+		go to disk position 0
+		schedule all the requests along the way
+		due to circular property, disk is now at MAX-1
+		schedule all the requests, up to the last request
+	if direction is right:
+		go to disk position MAX-1
+		schedule all the requests along the way
+		due to circular property, disk is now at 0
+		schedule all the requests, up to the last request
+if LOOK:
+	if direction is left:
+		go to the last request in the left direction
+		schedule all the requests along the way
+		change direction
+		schedule all the requests, up to the last request
+	if direction is right
+		go to the last request in the right direction
+		schedule all the requests along the way
+		change direction
+		schedule all the requests, up to the last request
+
+if C-LOOK:
+	if direction is left:
+		go to the last request in the left direction
+		schedule all the requests along the way
+		change direction
+		go to the last request in the right direction
+		DO NOT schedule any requests along the way
+		change direction
+		schedule all the requests, up to the last remaining request
+	if direction is right:
+		go to the last request in the right direction
+		schedule all the requests along the way
+		change direction
+		go to the last request in the left direction
+		DO NOT schedule any requests along the way
+		change direction
+		schedule all the requests, up to the last remaining request
+
+------------------------------------------------------------------------------------------------------------------------------------------
+12) Memory Allocation
+
+get no. of processes
+get memory required for each process
+get no. of blocks
+get memory required for each block
+
+choose preferred memory management policy
+
+if first-fit:
+	for each process:
+		for each block:
+			if process size <= block size:
+				allocate process in block
+				exit
+		if process is not allocated in any block: 
+display insufficient memory message
+if best-fit:
+	for each process:
+		for each block:
+			find the block with min size that can allocate the process
+			if found:
+				allocate process in block
+			else:
+				display insufficient memory message
+if worst-fit:
+	for each process:
+		for each block:
+			find the block with max size that can allocate the process
+			if found:
+				allocate process in block
+			else:
+				display insufficient memory message
+
+------------------------------------------------------------------------------------------------------------------------------------------
